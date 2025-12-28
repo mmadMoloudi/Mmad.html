@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تولید کانفیگ وایرگارد</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        #generateButton {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #saveButton {
+            background-color: #2196F3;
+            color: white;
+        }
+        #copyButton {
+            background-color: #FF9800;
+            color: white;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>تولید کانفیگ وایرگارد</h1>
+    <textarea id="configTextBox" placeholder="کانفیگ تولید شده در اینجا نمایش داده می‌شود..." readonly></textarea>
+
+    <div class="button-container">
+        <button id="generateButton" onclick="generateConfig()">تولید کانفیگ</button>
+        <button id="saveButton" onclick="saveConfig()">ذخیره کانفیگ</button>
+        <button id="copyButton" onclick="copyConfig()">کپی کانفیگ</button>
+    </div>
+</div>
+
+<script>
+    const configs = [
+        {
+            "Address": "10.36.30.213/32",
+            "DNS": "8abd:1c14:57e4:26da:eaad:31a8:db08:7cbd, 3752:85e6:aa1:6097:e3ef:d6c:d958:cf42, 1384:2bc3:f46c:17af:f95b:1d3d:edef:6b0f",
+            "ListenPort": 2110,
+            "PrivateKey": "0O/6rmPIrv1YCMUUQgSnRUmfGWc2gJskygSfCKPcM2Q=",
+            "PeerAllowedIPs": "10.166.22.78/32",
+            "PeerPublicKey": "6Rc225mgQl9U8Jle6dcTEH3RSOzqnHir0V5ZXOYMfHc="
+        },
+        {
+            "Address": "72.16.0.2/32",
+            "DNS": "89.51.39.40, f102:b299:f4b4:d20d:e2ad:b70b:906e:be99, d6d4:89e1:154b:3803:b53e:898b:b221:fec8",
+            "MTU": 1300,
+            "PrivateKey": "OCes97ngMNgCWQ/kPncJ/olyz0DfK3SnBtKTT7L2NG8=",
+            "PeerAllowedIPs": "162.159.192.57/32",
+            "PeerEndpoint": "dns-xgaming.vip.host:7892",
+            "PeerPublicKey": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
+        },
+        {
+            "Address": "192.168.1.1/24",
+            "DNS": "8.8.8.8, 8.8.4.4",
+            "ListenPort": 51820,
+            "PrivateKey": "kJds2l5dPj3zVtQkJzOs3j2gEmsfTk2h3Rz5wF7yghg=",
+            "PeerAllowedIPs": "192.168.2.0/24",
+            "PeerPublicKey": "Lshd8q2kQx9zB4nGp6dXJl2P5dZq6r9fJ6k6rKqF7hM="
+        }
+    ];
+
+    const fixedDns = "78.157.42.100, 78.157.42.101, 10.202.10.10, 10.202.10.11, 0000:0000:0000:0000:0000:ffff:4e9d:2a64, 0000:0000:0000:0000:0000:ffff:4e9d:2a65, 0000:0000:0000:0000:0000:ffff:0aca:0a0a, 0000:0000:0000:0000:0000:ffff:0aca:0a0b";
+
+    function selectRandomConfig() {
+        return configs[Math.floor(Math.random() * configs.length)];
+    }
+
+    function generateConfig() {
+        const config = selectRandomConfig();
+        let generatedConfig = `[Interface]\nAddress = ${config.Address}\nDNS = ${fixedDns}, ${config.DNS}\nListenPort = ${config.ListenPort || 51820}\nPrivateKey = ${config.PrivateKey}\n\n[Peer]\nAllowedIPs = ${config.PeerAllowedIPs}\nPublicKey = ${config.PeerPublicKey}\n`;
+
+        if (config.PeerEndpoint) {
+            generatedConfig += `Endpoint = ${config.PeerEndpoint}\n`;
+        }
+
+        document.getElementById('configTextBox').value = generatedConfig;
+    }
+
+    function saveConfig() {
+        const config = document.getElementById('configTextBox').value.trim();
+        if (!config) {
+            alert("هیچ کانفیگی برای ذخیره وجود ندارد!");
+            return;
+        }
+
+        const fileName = prompt("لطفاً نام فایل کانفیگ را وارد کنید:", "");
+        if (fileName !== null) {
+            const blob = new Blob([config], { type: 'application/octet-stream' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName + ".conf";
+            link.click();
+        }
+    }
+
+    function copyConfig() {
+        const config = document.getElementById('configTextBox').value.trim();
+        if (!config) {
+            alert("هیچ کانفیگی برای کپی وجود ندارد!");
+            return;
+        }
+
+        // ایجاد یک عنصر متنی موقتی برای کپی کردن
+        const textArea = document.createElement('textarea');
+        textArea.value = config;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        alert("کانفیگ به کلیپ‌بورد کپی شد!");
+    }
+</script>
+
+</body>
+</html>
